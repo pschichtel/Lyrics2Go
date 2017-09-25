@@ -1,0 +1,17 @@
+name: Hindi Lyrics
+url: "http://www.hindilyrics.net/lyrics/of-{title}.html"
+extractor: '(?is)<font face="verdana">(?P<lyrics>[\s\S]+?)</font>'
+
+headers:
+- name: User-Agent
+  value: 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:30.0) Gecko/20100101 Firefox/30.0'
+
+variables:
+- name: title
+  filters:
+  - [urlencode]
+
+filters:
+- [clean_spaces]
+- [trim]
+- [utf8_encode]
