@@ -1,0 +1,21 @@
+name: Song Lyrics
+url: "http://www.songlyrics.com/{artist}/{title}-lyrics/"
+extractor: '(?s)<div id="songLyricsDiv-outer">(?P<lyrics>.*?)</div>'
+
+variables:
+- &artist
+  name: artist
+  filters:
+  - [lowercase]
+  - [regex, '[^\sa-z0-9]', ""]
+  - [strip_nonascii, -]
+- <<: *artist
+  name: title
+    
+filters:
+- [strip_html]
+- [entity_decode]
+- [clean_spaces]
+- [utf8_encode]
+#- [fix_broken_chars, 'Ã', ISO-8859-1] TODO still necessary? encoding detection should handle this
+- [replace, 'þ', 'ß']
