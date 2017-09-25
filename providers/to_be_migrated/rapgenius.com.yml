@@ -1,22 +1,19 @@
 name: Rap Genius
+url: "http://rapgenius.com/{artist}-{title}-lyrics"
+extractor: '(?s)<div\s+class="lyrics"[^>]*?>(?P<lyrics>.*?)</div>'
 
 variables:
-    artist:
-        type: artist
-        filters:
-        - strip_diacritics
-        - lowercase
-        - [regex, '[^\sa-z0-9]\s*', ""]
-        - [strip_nonascii, -]
-    title:
-        type: title
-        filters: artist
+- &artist
+  name: artist
+  filters:
+  - [strip_diacritics]
+  - [lowercase]
+  - [regex, '[^\sa-z0-9]\s*', ""]
+  - [strip_nonascii, -]
+- <<: *artist
+  name: title
 
-config:
-    url: "http://rapgenius.com/{artist}-{title}-lyrics"
-    pattern: ['<div\s+class="lyrics"[^>]*?>(?<lyrics>.*?)</div>', s]
-    
-post-filters:
-- strip_html
-- clean_spaces
-- utf8_encode
+filters:
+- [strip_html]
+- [clean_spaces]
+- [utf8_encode]

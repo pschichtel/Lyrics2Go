@@ -1,20 +1,17 @@
 name: Pink Radio
+url: "http://pinkradio.com/naslov/{title}"
+extractor: '(?s)<span class="Stil9">\s*(?P<lyrics>.*?)</span>'
 
 variables:
-    artist:
-        type: artist
-        filters:
-        - lowercase
-        - [strip_nonascii, -]
-    title:
-        type: title
-        filters: artist
+- &artist
+  name: artist
+  filters:
+  - [lowercase]
+  - [strip_nonascii, -]
+- <<: *artist
+  name: title
 
-config:
-    url: "http://pinkradio.com/naslov/{title}"
-    pattern: ['<span class="Stil9">\s*(?<lyrics>.*?)</span>', s]
-    
-post-filters:
-- strip_html
-- entity_decode
-- br2nl
+filters:
+- [strip_html]
+- [entity_decode]
+- [br2nl]

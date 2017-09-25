@@ -1,6 +1,6 @@
 name: "Letras de músicas"
 url: "http://letras.mus.br/{artist}/{title}/"
-extractor: '(?s)<article>(?<lyrics>.+?)</article>'
+extractor: '(?s)<article>(?P<lyrics>.+?)</article>'
 
 variables:
 - &artist
@@ -11,8 +11,8 @@ variables:
 - <<: *artist
   name: title
     
-post-filters:
-- p2break
-- strip_html
-- clean_spaces
-- utf8_encode
+filters:
+- [p2break]
+- [strip_html]
+- [clean_spaces]
+- [utf8_encode]
