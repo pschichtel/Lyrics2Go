@@ -1,0 +1,21 @@
+﻿name: Teksty
+url: "http://teksty.org/{artist},{title},tekst-piosenki"
+extractor: '(?s)<div\s+class="songText"[^>]*>(?P<lyrics>.*?)</div>'
+
+variables:
+- &artist
+  name: artist
+  filters:
+  - [strip_diacritics]
+  - [replace, 'ł', l]
+  - [lowercase]
+  - [strip_nonascii, -]
+- <<: *artist
+  name: title
+  filters: artist
+    
+filters:
+- [strip_html]
+- [clean_spaces]
+- [utf8_encode]
+- [trim]

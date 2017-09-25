@@ -135,7 +135,7 @@ func cleanup_whitespace() FilterFunc {
 
 		out = strings.Replace(out, "\t", " ", -1)
 		out = strings.Replace(out, "\v", " ", -1)
-		out = strings.Replace(out, "\r\r", "\n", -1)
+		out = strings.Replace(out, "\r\n", "\n", -1)
 		out = strings.Replace(out, "\r", "\n", -1)
 
 		out = cleanupNewlineRegex.ReplaceAllString(out, "\n\n")
