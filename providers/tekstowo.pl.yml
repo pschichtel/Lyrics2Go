@@ -1,0 +1,21 @@
+﻿name: Tekstowo
+url: "http://www.tekstowo.pl/piosenka,{artist},{title}.html"
+extractor: '(?s)<div\s+class="song-text"[^>]*>\s*<h2>Tekst piosenki:</h2>\s*<br\s*/>[^<]+?<br\s*/>\s*(?P<lyrics>.*?)<p>&nbsp;</p>'
+
+variables:
+- &artist
+  name: artist
+  filters:
+  - [replace, 'ź', ' ']
+  - [strip_diacritics]
+  - [replace, 'ł', l]
+  - [lowercase]
+  - [strip_nonascii, _]
+- <<: *artist
+  name: title
+    
+filters:
+- [strip_html]
+- [utf8_encode]
+- [clean_spaces]
+- [trim]
