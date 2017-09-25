@@ -1,0 +1,18 @@
+name: Lyricsmode
+url: "http://www.lyricsmode.com/lyrics/{artist}/{title}.html"
+extractor: '(?s)<p[^>]+?id="lyrics_text"[^>]*?>(?P<lyrics>.+?)</p>'
+
+variables:
+- name: artist
+  filters:
+  - [lowercase]
+  - [strip_nonascii, _]
+  - [regex, '^.', '$0/$0']
+- name: title
+  filters:
+  - [lowercase]
+  - [strip_nonascii, _]
+
+filters:
+- [strip_html]
+- [trim]
