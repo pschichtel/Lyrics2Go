@@ -1,0 +1,38 @@
+# the loader for this provider: static, search, api
+# default: static
+loader: static
+
+# the name of the provider. this will be shown in MusicBee's settings
+name: 'Example'
+
+# the URL to request. {artist}, {album} and {title} are placeholders for the values from the song.
+url: "http://www.example.org/lyrics/{artist}/{title}.html"
+
+# The regular expression to apply to the content of the website.
+# The pattern must contain a named capturing group called "lyrics" like: (?P<lyrics>.+?)
+# The pattern syntax must conform to re2: https://github.com/google/re2/blob/master/doc/syntax.txt
+extractor: '(?i)<!-- start of lyrics -->(?P<lyrics>.+?)<!-- end of lyrics -->'
+
+# prepare the input
+variables:
+	# filters to apply to the artist
+- &artist
+  name: artist # the source of the value
+  filters:
+  - strip_diacritics
+  - [stripdown, _]
+  - urlencode
+
+  # filters to apply to the title
+- <<: *artist # reference the filters of artist
+  name: title
+
+post-filters:
+- strip_html
+- utf8_encode
+- trim
+
+# use validations in case the site does not indicate missing lyrics properly
+validations:
+- [not contains, Click here to submit these lyrics]
+

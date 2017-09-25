@@ -1,0 +1,18 @@
+name: Smriti
+
+variables:
+    title:
+        type: title
+        filters:
+        - lowercase
+        - [regex, '[^\sa-z0-9]\s*', ""]
+        - [strip_nonascii, -]
+
+config:
+    url: "http://smriti.com/hindi-songs/{title}"
+    pattern: ['<div class="songbody">(?<lyrics>.*?)</div>', s]
+    
+post-filters:
+- strip_html
+- trim
+- utf8_encode

@@ -1,0 +1,20 @@
+name: LyricWiki Gracenote
+url: "http://lyrics.wikia.com/Gracenote:{artist}:{title}"
+extractor: '(?s)<div>\s+<!--\s+Usage.*?\s+-->(?P<lyrics>.+?)<\/div>'
+
+variables:
+- &artist
+  name: artist
+  filters:
+  - [regex, "\\s+", _]
+  - [urlencode]
+- <<: *artist
+  name: title
+
+post-filters:
+- [br2nl]
+- [p2break]
+- [strip_html]
+- [entity_decode]
+- [utf8_encode]
+- [trim]

@@ -1,0 +1,30 @@
+name: MetroLyrics
+url: "http://www.metrolyrics.com/{title}-lyrics-{artist}.html"
+extractor: '(?s)<div id="lyrics-body-text"[^>]*>(?P<lyrics>.*?)<!--BOTTOM MPU-->'
+
+variables:
+- &artist
+  name: artist
+  filters:
+  - [strip_diacritics]
+  - [lowercase]
+  - [regex, "'", ""]
+  - [regex, '[^\sa-z0-9]\s*', ""]
+  - [strip_nonascii, -]
+- <<: *artist
+  name: title
+    
+post-filters:
+- [regex, '(?is)<!--WIDGET - RELATED-->.+?<!--END WIDGET - RELATED-->', '']
+- [regex, '(?is)<!--WIDGET - PHOTOS-->.+?<!--END WIDGET - PHOTOS-->', '']
+- [strip_html]
+- [strip_html_comments]
+- [strip_links]
+- [entity_decode]
+- [clean_spaces]
+- [regex, "’", "'"]
+- [utf8_encode]
+- [trim]
+
+validations:
+- [not contains, Click here to submit these lyrics]

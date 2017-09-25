@@ -1,0 +1,24 @@
+name: Song Lyrics
+
+variables:
+    artist:
+        type: artist
+        filters:
+        - lowercase
+        - [regex, '[^\sa-z0-9]', ""]
+        - [strip_nonascii, -]
+    title:
+        type: title
+        filters: artist
+
+config:
+    url: "http://www.songlyrics.com/{artist}/{title}-lyrics/"
+    pattern: ['<div id="songLyricsDiv-outer">(?<lyrics>.*?)</div>', s]
+    
+post-filters:
+- strip_html
+- entity_decode
+- clean_spaces
+- utf8_encode
+- [fix_broken_chars, 'Ã', ISO-8859-1]
+- [replace, 'þ', 'ß']

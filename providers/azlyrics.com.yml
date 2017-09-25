@@ -1,0 +1,23 @@
+name: A-Z Lyrics Universe
+url: "http://www.azlyrics.com/lyrics/{artist}/{title}.html"
+extractor: '(?s)<div>\s+<!--\s+Usage.*?\s+-->(?P<lyrics>.+?)<\/div>'
+
+headers:
+- name: User-Agent
+  value: 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:30.0) Gecko/20100101 Firefox/30.0' # Firefox 30 Win x64 user agent
+
+variables:
+- &artist
+  name: artist
+  lookup: # use a lookup table to implement unique special cases
+    '!!!': '
+  filters:
+    - [lowercase]
+    - [strip_nonascii]
+- <<: *artist
+  name: title
+
+post-filters:
+- [strip_html]
+- [trim]
+- [utf8_encode]

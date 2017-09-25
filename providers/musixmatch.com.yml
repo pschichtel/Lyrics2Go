@@ -1,0 +1,58 @@
+name: "Musixmatch"
+url: "https://www.musixmatch.com/lyrics/{artist}/{title}"
+extractor: '(?s)<p\s+class="\s*mxm-lyrics__content\s*"[^>]*?>(?P<lyrics>.*?</p>.*?)</p>'
+
+headers:
+- name: User-Agent
+  value: 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:30.0) Gecko/20100101 Firefox/30.0' # Firefox 30 Win x64 user agent
+
+filters:
+- &chkchkchk_filter [replace, "!!!", "artist-46206"] # !!! (Chk Chk Chk) artist exception
+- &nonalpha_filter [regex, '(\s([^a-z0-9\s-])+(\s|\W)+)|(\w[^a-z0-9-]+(\s|\W)+)', " "]
+                                          # ^ Clean up any remaining successive non-alphanumeric char(s) before strip_nonascii
+                                              ## ^ Long & stupid bc couldn't figure out YAML-friendly non-capturing "(?:...)"
+                                                  ### EZ version: [regex, '\W+(?:\W)(?<!$)', " "]
+- &featured_filter [regex, '(\W|\s)+(feat.+|ft[\W\s]+|(f\.\s)).+', " "] # Strip F./ft/eat/uring + everything after
+- &end_nonword_filter [regex, '\W+$', ""] # Strip end-of-string non-word chars
+- &medial_nonalpha_filter [regex, '([a-z0-9%])[^\sa-z0-9%]+([a-z0-9%]+)', "$1-$2"]
+                                          # ^ Replace medial non-alphanumeric char(s) with single "-" (except "'") e.g., M.I.A. > M-I-A.
+
+
+variables:
+- name: artist
+  lookup:
+    '!!!': artist-46206
+  filters:
+  - [strip_diacritics]
+  - [lowercase]
+  - [replace, "+/-", "p%m"]               # +/- artist janky exception (step 1)
+  - *featured_filter
+  - [regex, "'", "%27"]                   # URL encode "'" bc MM is cool w/ dat shit
+  - [regex, '\s&\sthe', " and the"]      # ONLY if succeeded by "the", replace " & " with " and "
+                                              ## ^ Currently superfluous bc plugin preemptively replaces "&" with "and"
+                                                  ### ^ So MM will choke if <artist> contains "& (?!the)"
+  - *medial_nonalpha_filter
+  - *end_nonword_filter
+  - *nonalpha_filter
+  - [strip_nonascii, -]
+  - [replace, "-27", "%27"]               # Fix "'" URL encoding after strip_nonascii
+  - [regex, '^p-m', "-"]             # Janky- replace for artist +/- after strip_nonascii (step 2)
+- name: title
+  filters:                                # Not using identical artist filters due to different treatment of "&" in titles vs artist names
+                                          # Musixmatch strips "&" from <title> ALWAYS; from <artist> too, *unless* "& the", then replaced with "and"
+                                              ## ^ see "&" treatment note above, under 'artist'
+  - [strip_diacritics]
+  - [lowercase]
+  - *featured_filter
+  - [regex, "'", "%27"]                   # URL encode "'" bc MM is cool w/ dat shit
+  - *medial_nonalpha_filter
+  - *end_nonword_filter
+  - *nonalpha_filter
+  - [strip_nonascii, -]
+  - [replace, "-27", "%27"]               # Fix "'" URL encoding after strip_nonascii
+
+post-filters:
+- [regex, '(?s)<script[^>]*>.*?</script>', '']
+- [p2break]
+- [strip_html]
+- [strip_html_comments]
