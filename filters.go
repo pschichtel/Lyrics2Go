@@ -65,10 +65,10 @@ func strip_pattern(pattern string) FilterFunc {
 	}
 }
 
-func to_newline(pattern string) FilterFunc {
+func to_newline(pattern string, n int) FilterFunc {
 	compiled := regexp.MustCompile(pattern)
 	return func(in string, _ []string, _ encoding.Encoding) string {
-		return compiled.ReplaceAllString(in, "\n")
+		return compiled.ReplaceAllString(in, strings.Repeat("\n", n))
 	}
 }
 

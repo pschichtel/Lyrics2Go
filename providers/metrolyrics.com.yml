@@ -17,6 +17,7 @@ variables:
 filters:
 - [regex, '(?is)<!--WIDGET - RELATED-->.+?<!--END WIDGET - RELATED-->', '']
 - [regex, '(?is)<!--WIDGET - PHOTOS-->.+?<!--END WIDGET - PHOTOS-->', '']
+- [p2break]
 - [strip_html]
 - [strip_html_comments]
 - [strip_links]
