@@ -1,0 +1,17 @@
+name: "Cušpajz"
+url: "http://cuspajz.com/tekstovi-pjesama/pjesma/{artist}/{title}.html"
+extractor: '(?s)<p\sclass="text\sclearfix">(?P<lyrics>[\s\S]*?)</p>'
+
+variables:
+- &artist
+  name: artist
+  filters:
+  - [strip_diacritics]
+  - [lowercase]
+  - [strip_nonascii, -]
+- <<: *artist
+  name: title
+    
+filters:
+- [strip_html]
+- [entity_decode]
