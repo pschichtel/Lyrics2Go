@@ -5,19 +5,24 @@ extractor: '(?s)<div\s+class="song_body-lyrics"[^>]*?>[\s\S]*?<p>(?P<lyrics>[\s\
 common-lut: &common_lut
   '!!!': chk-chik-chick
 
+filters:
+- &nonalpha_filter [regex, '(\s([^a-z0-9\s-])+(\s|\W)+)|(\w[^a-z0-9-]+(\s|\W)+)', " "]
+- &featured_filter [regex, '(\W|\s)+(feat.+|ft[\W\s]+|(f\.\s)).+', " "] # Strip F./ft/eat/uring + everything after
+- &medial_nonalpha_filter [regex, '([a-z0-9%])[^\sa-z0-9%]+([a-z0-9%]+)', "$1-$2"]
+- &garbage_filter [regex, '\.+|,+|(\W+$)|(^\W+)|''', ""]
+
 variables:
 - name: artist
   lookup:
     '<<': *common_lut
   filters:
   - [strip_diacritics]
-  - [regex, '^The\s', ""]
   - [lowercase]
-  - [regex, '(?<=\W|\s)+(feat.+|ft[\W\s]+|(f\.\s)).+', ""]
-  - [regex, '\.+|,+|(\W+(?=$))|(^\W+)', ""]
-  - [regex, "'", ""]
-  - [regex, '(?<=[a-z0-9%])[^\sa-z0-9%]+(?=[a-z0-9%]+)', "-"]
-  - [regex, '((?<=\s)([^a-z0-9\s-])+(\s|\W)+)|((?<=\w)([^a-z0-9-])+(\s|\W)+)', " "]
+  - [regex, '^The\s', ""]
+  - *featured_filter
+  - *garbage_filter
+  - *medial_nonalpha_filter
+  - *nonalpha_filter
   - [strip_nonascii, -]
 - name: title
   lookup:
@@ -25,13 +30,11 @@ variables:
   filters:
   - [strip_diacritics]
   - [lowercase]
-  - [replace, "!!!", "chk-chik-chick"]
-  - [regex, '(?<=\W|\s)+(feat.+|ft[\W\s]+|(f\.\s)).+', ""]
-  - [regex, '\s&(?=\s)', " and"]
-  - [regex, '\.+|,+|(\W+(?=$))|(^\W+)', ""]
-  - [regex, "'", ""]
-  - [regex, '(?<=[a-z0-9%])[^\sa-z0-9%]+(?=[a-z0-9%]+)', "-"]
-  - [regex, '((?<=\s)([^a-z0-9\s-])+(\s|\W)+)|((?<=\w)([^a-z0-9-])+(\s|\W)+)', " "]
+  - [regex, '\s+(feat.+|ft[\W\s]+|(f\.\s)).+', " "]
+  - [regex, '\s&\s', " and "]
+  - *garbage_filter
+  - *medial_nonalpha_filter
+  - *nonalpha_filter
   - [strip_nonascii, -]
 
 filters:
