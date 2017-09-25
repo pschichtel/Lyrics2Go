@@ -27,7 +27,7 @@ variables:
 - <<: *artist # reference the filters of artist
   name: title
 
-post-filters:
+filters:
 - strip_html
 - utf8_encode
 - trim

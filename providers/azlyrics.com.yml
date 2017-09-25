@@ -17,7 +17,7 @@ variables:
 - <<: *artist
   name: title
 
-post-filters:
+filters:
 - [strip_html]
 - [trim]
 - [utf8_encode]

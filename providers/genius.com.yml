@@ -34,7 +34,7 @@ variables:
   - [regex, '((?<=\s)([^a-z0-9\s-])+(\s|\W)+)|((?<=\w)([^a-z0-9-])+(\s|\W)+)', " "]
   - [strip_nonascii, -]
 
-post-filters:
+filters:
 - [strip_html]
 - [clean_spaces]
 - [utf8_encode]

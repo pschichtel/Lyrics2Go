@@ -11,7 +11,7 @@ variables:
 - <<: *artist
   name: title
 
-post-filters:
+filters:
 - [br2nl]
 - [p2break]
 - [strip_html]

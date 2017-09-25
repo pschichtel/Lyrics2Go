@@ -14,7 +14,7 @@ variables:
 - <<: *artist
   name: title
     
-post-filters:
+filters:
 - [regex, '(?is)<!--WIDGET - RELATED-->.+?<!--END WIDGET - RELATED-->', '']
 - [regex, '(?is)<!--WIDGET - PHOTOS-->.+?<!--END WIDGET - PHOTOS-->', '']
 - [strip_html]

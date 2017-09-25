@@ -51,7 +51,7 @@ variables:
   - [strip_nonascii, -]
   - [replace, "-27", "%27"]               # Fix "'" URL encoding after strip_nonascii
 
-post-filters:
+filters:
 - [regex, '(?s)<script[^>]*>.*?</script>', '']
 - [p2break]
 - [strip_html]

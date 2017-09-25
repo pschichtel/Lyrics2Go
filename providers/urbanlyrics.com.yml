@@ -1,0 +1,16 @@
+name: Urban Lyrics
+url: "http://www.urbanlyrics.com/lyrics/{artist}/{title}.html"
+extractor: '(?s)<!-- lyrics start -->(?P<lyrics>.+?)<!-- lyrics end -->'
+
+variables:
+- &artist
+  name: artist
+  filters:
+  - [lowercase]
+  - [strip_nonascii]
+- <<: *artist
+  name: title
+    
+filters:
+- [strip_html]
+- [utf8_encode]

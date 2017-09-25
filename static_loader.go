@@ -24,13 +24,13 @@ type Header struct {
 }
 
 type StaticProviderConf struct {
-	Name 		 string
+	Name         string
 	Url          string
 	Extractor    string
-	MaxRedirects int `yaml:"max-redirects"`
+	MaxRedirects int        `yaml:"max-redirects"`
 	Variables    []VariableDefinition
 	Headers      []Header
-	PostFilters  [][]string `yaml:"post-filters"`
+	Filters      [][]string
 	Validations  [][]string
 }
 
@@ -125,7 +125,7 @@ func loadStatically(conf StaticProviderConf, values map[string]string, filters m
 		}
 
 		rawLyrics := match[extractorGroupIndex]
-		lyrics := filterValue(rawLyrics, conf.PostFilters, filters, detectedEncoding)
+		lyrics := filterValue(rawLyrics, conf.Filters, filters, detectedEncoding)
 
 		if validateValue(lyrics, conf.Validations, validations, detectedEncoding) {
 			fmt.Println(lyrics)
