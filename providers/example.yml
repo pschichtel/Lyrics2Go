@@ -18,6 +18,8 @@ variables:
 	# filters to apply to the artist
 - &artist
   name: artist # the source of the value
+  lookup: # use a lookup table to implement unique special cases
+    '!!!': 'artist-46206'
   filters:
   - strip_diacritics
   - [stripdown, _]

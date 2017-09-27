@@ -9,8 +9,6 @@ headers:
 variables:
 - &artist
   name: artist
-  lookup: # use a lookup table to implement unique special cases
-    '!!!': '
   filters:
     - [lowercase]
     - [strip_nonascii]
