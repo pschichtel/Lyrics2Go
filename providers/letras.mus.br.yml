@@ -12,7 +12,9 @@ variables:
   name: title
     
 filters:
+- [br2nl]
 - [p2break]
 - [strip_html]
 - [clean_spaces]
 - [utf8_encode]
+- [trim]
