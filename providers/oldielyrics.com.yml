@@ -1,6 +1,6 @@
 name: Oldies Lyrics
 url: "http://oldielyrics.com/lyrics/{artist}/{title}.html"
-extractor: '(?s)<div\s+class="lyrics"[^>]*>\s*<p>(?P<lyrics>.+)</p>\s*</div>'
+extractor: '(?s)<div\s+id="lyrics"[^>]*>\s*<p>(?P<lyrics>.+)</p>\s*</div>'
 
 variables:
 - &artist
@@ -14,10 +14,10 @@ variables:
   name: title
 
 filters:
-- [br2nl]
 - [p2break]
 - [strip_html]
 - [strip_links]
 - [entity_decode]
 - [clean_spaces]
 - [utf8_encode]
+- [trim]
