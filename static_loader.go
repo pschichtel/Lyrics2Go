@@ -64,6 +64,10 @@ func loadStatically(conf StaticProviderConf, values map[string]string, filters m
 	utf8, _ := charset.Lookup("utf-8")
 	vars := make(map[string]string)
 
+	for name, value := range values {
+		logLine("Variable: %s=%s", name, value)
+	}
+
 	for _, variable := range conf.Variables {
 		name := strings.ToLower(variable.Name)
 		value, found := values[name]

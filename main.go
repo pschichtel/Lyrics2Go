@@ -93,11 +93,13 @@ func main() {
 	fileBytes, err := ioutil.ReadFile(file)
 	if err != nil {
 		logLine("Failed to read file %s: %s", file, err)
+		os.Exit(1)
 	} else {
 		loaderConf := LoaderConf{Loader:LOADER_STATIC}
 		err := yaml.Unmarshal(fileBytes, &loaderConf)
 		if err != nil {
 			logLine("Failed to parse config: %s", err)
+			os.Exit(1)
 		} else {
 			switch loaderConf.Loader {
 			case "static":
@@ -114,6 +116,9 @@ func main() {
 				} else {
 					logLine("Success!")
 				}
+			default:
+				logLine("Unknown loader %s", loaderConf.Loader)
+				os.Exit(1)
 			}
 		}
 	}
