@@ -6,7 +6,7 @@ variables:
 - name: title
   filters:
   - [lowercase]
-  - [regex, '[^\sa-z0-9]\s*', ""]
+  - [regex, '[^\sa-z0-9]', ""]
   - [strip_nonascii, -]
 
 filters:
