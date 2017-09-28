@@ -1,23 +1,25 @@
 #!/bin/bash
-#set -x
-
-unsyncedlyrics_tag="UNSYNCEDLYRICS"
 
 get_metadata() {
     mediainfo --Inform="General;artist=%Performer%\ntitle=%Title%\nalbum=%Album%" "$1"
 }
 
 get_tag() {
-    local mime="$1"
-    local file="$2"
-    local name="$3"
+    local file="$1"
+    local name="$2"
 
-    case "$mime" in
-        *)
-            mediainfo --Inform="General;%${name}%" "$file"
-            ;;
-    esac
+    mediainfo --Inform="General;%${name}%" "$file"
+}
 
+flac_remove_tag() {
+    local file="$1"
+    local name="$2"
+
+    metaflac --remove-tag="${name}" "$file"
+}
+
+get_lyrics() {
+    get_tag "$1" Lyrics
 }
 
 add_lyrics() {
@@ -25,58 +27,25 @@ add_lyrics() {
     local file="$2"
     local lyrics="$3"
 
-    echo "Writing lyrics to ${file}..."
+    echo -n "Writing lyrics to ${file}..."
 
     case "$mime" in
         audio/x-flac)
-            metaflac --set-tag=LYRICS="$lyrics" "$file"
+            metaflac --set-tag="LYRICS=${lyrics}" "$file"
+            echo "done!"
+            ;;
+        audio/mpeg)
+            eyeD3 --add-lyrics "$lyrics"
+            local tempFile="$(mktemp)"
+            echo "$lyrics" > "$tempFile"
+            eyeD3 --add-lyrics "$tempFile" "$file"
+            rm "$tempFile"
             echo "done!"
             ;;
         *)
-            echo "Unable to write to unknown mime ${mime}!"
+            echo "unknown mime ${mime}!"
             ;;
     esac
-}
-
-add_tag() {
-    local mime="$1"
-    local file="$2"
-    local name="$3"
-    local value="$4"
-
-    echo "Adding tag ${name} to ${file}..."
-
-    case "$mime" in
-        audio/x-flac)
-            metaflac --set-tag="${name}=${value}" "$file"
-            echo "done!"
-            ;;
-        *)
-            echo "Unable to add tag to unknown mime ${mime}!"
-            ;;
-    esac
-}
-
-remove_tag() {
-    local mime="$1"
-    local file="$2"
-    local name="$3"
-
-    echo "Removing tag ${name} from ${file}..."
-
-    case "$mime" in
-        audio/x-flac)
-            metaflac --remove-tag="${name}" "$file"
-            echo "done!"
-            ;;
-        *)
-            echo "Unable to remove tag from unknown mime ${mime}!"
-            ;;
-    esac
-}
-
-get_lyrics() {
-    get_tag "$1" "$2" Lyrics
 }
 
 handle_file() {
@@ -86,37 +55,40 @@ handle_file() {
     local mime="$(file --brief --mime-type "$file")"
     if [[ ! "$mime" =~ ^audio/ ]]
     then
-        return
+        echo "Not an audio file!"
+        return 1
     fi
 
-    if [[ ! -z "$(get_lyrics "$mime" "$file")" ]]
+    if [[ ! -z "$(get_lyrics "$file")" ]]
     then
         echo "Found lyrics!"
-    else
-        echo "No lyrics, search them!"
-        set -x
-        for provider in "$@"
-        do
-            local existingLyrics="$(get_tag "$mime" "$file" "$unsyncedlyrics_tag")"
-            if [[ ! -z "$existingLyrics" ]]
-            then
-                echo "Lyrics found in different tag: $unsyncedlyrics_tag"
-                remove_tag "$mime" "$file" "$unsyncedlyrics_tag"
-                add_lyrics "$mime" "$file" "$existingLyrics"
-                return 0
-            else
-                local lyrics
-                lyrics="$(get_metadata "$file" | xargs -d"\n" lyrics2go "$provider")"
-                if [[ $? == 0 ]]
-                then
-                    add_lyrics "$mime" "$file" "$lyrics"
-                    return 0
-                else
-                    echo "Lyrics lookup failed for ${provider}!"
-                fi
-            fi
-        done
+        return 1
     fi
+
+    local flac_alt_tag="UNSYNCEDLYRICS"
+    local existingLyrics="$(get_tag "$file" "$flac_alt_tag")"
+    if [[ ! -z "$existingLyrics" ]]
+    then
+        echo -n "Lyrics found in ${flac_alt_tag} tag, migrating..."
+        flac_remove_tag "$file" "$flac_alt_tag"
+        add_lyrics "$mime" "$file" "$existingLyrics"
+        echo "done!"
+        return 0
+    fi
+
+    echo "No lyrics, searching..."
+    for provider in "$@"
+    do
+        local lyrics
+        lyrics="$(get_metadata "$file" | xargs -d"\n" lyrics2go "$provider")"
+        if [[ $? == 0 ]]
+        then
+            add_lyrics "$mime" "$file" "$lyrics"
+            return 0
+        else
+            echo "Lyrics lookup failed for ${provider}!"
+        fi
+    done
 }
 
 
