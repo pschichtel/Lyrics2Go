@@ -1,6 +1,6 @@
 name: Pink Radio
 url: "http://pinkradio.com/naslov/{title}"
-extractor: '(?s)<span class="Stil9">\s*(?P<lyrics>.*?)</span>'
+extractor: '(?s)<div class="detailText">\s*(?P<lyrics>.*?)</div>'
 
 variables:
 - &artist
@@ -12,6 +12,5 @@ variables:
   name: title
 
 filters:
-- [strip_html]
-- [entity_decode]
-- [br2nl]
+- [clean_spaces]
+- [trim]
