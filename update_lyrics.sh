@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#dependencies: mediainfo, eyeD3, metaflac
+
 get_metadata() {
     mediainfo --Inform="General;artist=%Performer%\ntitle=%Title%\nalbum=%Album%" "$1"
 }
