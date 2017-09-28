@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"io/ioutil"
 	"strconv"
+	"os"
 )
 
 const EXTRACTOR_REGEX_GROUP = "lyrics"
@@ -49,25 +50,20 @@ func compileUrl(template string, vars map[string]string) string {
 	})
 }
 
-func loadStatically(conf StaticProviderConf, values map[string]string, filters map[string]FilterFunc, validations map[string]ValidationFunc) error {
-
-	extractorRegex, err := regexp.Compile(conf.Extractor)
-	if err != nil {
-		return err
+func checkRedirect(maxRedirects int) func(*http.Request, []*http.Request) error {
+	return func(req *http.Request, via []*http.Request) error {
+		logLine("Redirected to: %s", req.URL)
+		if len(via) >= maxRedirects {
+			return fmt.Errorf("stopped after %d redirects", maxRedirects)
+		}
+		return nil
 	}
+}
 
-	extractorGroupIndex := extractGroupIndex(extractorRegex, EXTRACTOR_REGEX_GROUP)
-	if extractorGroupIndex < 0 {
-		return fmt.Errorf("group %s not defined in extractor regex", EXTRACTOR_REGEX_GROUP)
-	}
+func processVars(conf StaticProviderConf, values map[string]string, filters map[string]FilterFunc) map[string]string {
 
 	utf8, _ := charset.Lookup("utf-8")
 	vars := make(map[string]string)
-
-	for name, value := range values {
-		logLine("Variable: %s=%s", name, value)
-	}
-
 	for _, variable := range conf.Variables {
 		name := strings.ToLower(variable.Name)
 		value, found := values[name]
@@ -83,26 +79,59 @@ func loadStatically(conf StaticProviderConf, values map[string]string, filters m
 		}
 		vars[name] = filterValue(value, variable.Filters, filters, utf8)
 	}
+	return vars
+}
 
-	compiledUrl := compileUrl(conf.Url, vars)
+func buildRequest(conf StaticProviderConf, variables map[string]string) (*http.Request, error) {
+
+
+	compiledUrl := compileUrl(conf.Url, variables)
 
 	logLine("Compiled URL: %s", compiledUrl)
 
 	req, err := http.NewRequest("GET", compiledUrl, nil)
-	client := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			logLine("Redirected to: %s", req.URL)
-			if len(via) >= conf.MaxRedirects {
-				return fmt.Errorf("stopped after %d redirects", conf.MaxRedirects)
-			}
-			return nil
-		},
+	if err != nil {
+		return nil, err
 	}
+
 	for _, header := range conf.Headers {
 		req.Header.Add(header.Name, header.Value)
 	}
-	res, err := client.Do(req)
+	cookie, cookieFoundInEnv := os.LookupEnv("STATIC_COOKIE_HEADER")
+	if cookieFoundInEnv {
+		req.Header.Add("Cookie", cookie)
+	}
 
+	return req, nil
+}
+
+func loadStatically(conf StaticProviderConf, values map[string]string, filters map[string]FilterFunc, validations map[string]ValidationFunc) error {
+
+	extractorRegex, err := regexp.Compile(conf.Extractor)
+	if err != nil {
+		return err
+	}
+
+	extractorGroupIndex := extractGroupIndex(extractorRegex, EXTRACTOR_REGEX_GROUP)
+	if extractorGroupIndex < 0 {
+		return fmt.Errorf("group %s not defined in extractor regex", EXTRACTOR_REGEX_GROUP)
+	}
+
+
+	for name, value := range values {
+		logLine("Variable: %s=%s", name, value)
+	}
+
+	client := &http.Client{
+		CheckRedirect: checkRedirect(conf.MaxRedirects),
+	}
+
+	request, err := buildRequest(conf, processVars(conf, values, filters))
+	if err != nil {
+		return err
+	}
+
+	res, err := client.Do(request)
 	if err != nil {
 		return err
 	}
