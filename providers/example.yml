@@ -21,18 +21,18 @@ variables:
   lookup: # use a lookup table to implement unique special cases
     '!!!': 'artist-46206'
   filters:
-  - strip_diacritics
+  - [strip_diacritics]
   - [stripdown, _]
-  - urlencode
+  - [urlencode]
 
   # filters to apply to the title
 - <<: *artist # reference the filters of artist
   name: title
 
 filters:
-- strip_html
-- utf8_encode
-- trim
+- [strip_html]
+- [utf8_encode]
+- [trim]
 
 # use validations in case the site does not indicate missing lyrics properly
 validations:
