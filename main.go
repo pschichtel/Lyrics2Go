@@ -11,7 +11,7 @@ import (
 	"html"
 )
 
-const LOADER_STATIC = "static"
+const LoaderStatic = "static"
 
 type LoaderConf struct {
 	Loader string
@@ -95,7 +95,7 @@ func main() {
 		logLine("Failed to read file %s: %s", file, err)
 		os.Exit(1)
 	} else {
-		loaderConf := LoaderConf{Loader:LOADER_STATIC}
+		loaderConf := LoaderConf{Loader: LoaderStatic}
 		err := yaml.Unmarshal(fileBytes, &loaderConf)
 		if err != nil {
 			logLine("Failed to parse config: %s", err)
